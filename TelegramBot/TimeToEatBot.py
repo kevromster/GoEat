@@ -35,7 +35,7 @@ def parse_time(time_str):
     return datetime.strptime(time_str, f'%H{split_symbol}%M')
 
 
-def onStartCommand(update, context):
+def on_start_command(update, context):
     welcome_text = "Введите команду /start и время, в которое вы обычно идёте обедать, например:\n  /start 13:30 14:10"
 
     if len(context.args) != 2:
@@ -61,23 +61,23 @@ def onStartCommand(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=f"start time: {start_time}, end time: {end_time}")
 
 
-def onUnknownCommand(update, context):
+def on_unknown_command(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
 
 
-def onAnyTextMessage(update, context):
+def on_any_text_message(update, context):
     LOGGER.info('got input message from chatId %d, username \'%s\': "%s"',
                 update.effective_chat.id, update.message.from_user.username, update.message.text)
 
 
-def runBot():
+def run_bot():
     LOGGER.info('Starting @TimeToEatBot...')
     updater = Updater(token=TGBOT_TOKEN, use_context=True)
     dispatcher = updater.dispatcher
 
-    start_command_handler = CommandHandler('start', onStartCommand)
-    unknown_command_handler = MessageHandler(Filters.command, onUnknownCommand)
-    any_text_message_handler = MessageHandler(Filters.text, onAnyTextMessage)
+    start_command_handler = CommandHandler('start', on_start_command)
+    unknown_command_handler = MessageHandler(Filters.command, on_unknown_command)
+    any_text_message_handler = MessageHandler(Filters.text, on_any_text_message)
 
     dispatcher.add_handler(start_command_handler)
     dispatcher.add_handler(unknown_command_handler)
@@ -91,4 +91,4 @@ def runBot():
 
 
 if __name__ == '__main__':
-    runBot()
+    run_bot()
