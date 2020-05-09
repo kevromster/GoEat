@@ -7,7 +7,7 @@ Main application modules:
 - Frontend: UI for setting up all parameters.
 - Main bot in Telegram.
 - Feedback bot in Telegram.
-- Backend for Telegram bot. Processes user messages.
+- Backend for the Telegram bot. Processes user messages.
 - Objects detector. Processes images of the queue and fills the backend with found data.
 
 ## License
