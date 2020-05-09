@@ -1,5 +1,5 @@
 # GoEat
-Track queues in eating places and notify via the Telegram bot when they are short, so it is time to go eating!
+Tracks queues in eating places and notifies via the Telegram bot when they are short, so it is time to go eating!
 
 Main application modules:
 
@@ -8,7 +8,7 @@ Main application modules:
 - Main bot in Telegram.
 - Feedback bot in Telegram.
 - Backend for Telegram bot. Processes user messages.
-- Objects detector. Processes images of a queue and fills backend with found data.
+- Objects detector. Processes images of the queue and fills the backend with found data.
 
 ## License
 
