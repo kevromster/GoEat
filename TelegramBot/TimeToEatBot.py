@@ -25,7 +25,7 @@ TGBOT_TOKEN = '967774018:AAEy8obt8JfEJVcHNcJhqnin9P5S3YAjkSM'
 
 
 def parse_time(time_str):
-    """Parses time from input string expected to be in format 'HH:MM'.
+    """Parses time from input string expected to be in format 'HH:MM' or 'HH-MM'.
        Returns struct_time object or raises ValueError exception in case of bad input string."""
 
     split_symbol = ':'
@@ -57,8 +57,8 @@ def on_start_command(update, context):
                                       welcome_text)
         return
 
-    # TODO: add range processing
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f"start time: {start_time}, end time: {end_time}")
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f'start time: {start_time.strftime("%H:%M")}; end '
+                                                                    f'time: {end_time.strftime("%H:%M")}')
 
 
 def on_unknown_command(update, context):
