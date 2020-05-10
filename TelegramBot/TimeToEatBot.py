@@ -15,6 +15,7 @@
 """@TimeToEatBot Telegram bot implementation."""
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.utils.request import Request
 from datetime import datetime
 
 import logging
@@ -22,6 +23,8 @@ logging.basicConfig(format='[%(asctime)s] %(name)s %(levelname)s: %(message)s', 
 LOGGER = logging.getLogger('TimeToEatBot')
 
 TGBOT_TOKEN = '967774018:AAEy8obt8JfEJVcHNcJhqnin9P5S3YAjkSM'
+GOEAT_SERVER = 'http://127.0.0.1:8000'
+KUKURUZA_CAM = 'https://lideo.tv/hamsternsk/streams/12620'
 
 
 def parse_time(time_str):
@@ -33,6 +36,20 @@ def parse_time(time_str):
         split_symbol = '-'
 
     return datetime.strptime(time_str, f'%H{split_symbol}%M')
+
+
+def add_tracking_task(chat_id, start_time, end_time):
+    """Sends request to the server to create new tracking task."""
+
+    data_to_send = {
+        'tg_chat_id' : chat_id,
+        'camera_url' : KUKURUZA_CAM,
+        'time_range_start' : start_time.strftime("%H:%M"),
+        'time_range_finish' : end_time.strftime("%H:%M")
+    }
+
+    reply = Request().post(GOEAT_SERVER + '/api/submit/', data_to_send)
+    LOGGER.info('reply from server: ' + reply)
 
 
 def on_start_command(update, context):
@@ -59,6 +76,9 @@ def on_start_command(update, context):
 
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'start time: {start_time.strftime("%H:%M")}; end '
                                                                     f'time: {end_time.strftime("%H:%M")}')
+
+    add_tracking_task(update.effective_chat.id, start_time, end_time)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f'task created')
 
 
 def on_unknown_command(update, context):
