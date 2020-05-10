@@ -14,11 +14,13 @@
 # ==============================================================================
 """@TimeToEatBot Telegram bot implementation."""
 
+from telegram import TelegramError
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.utils.request import Request
 from datetime import datetime
 
 import logging
+
 logging.basicConfig(format='[%(asctime)s] %(name)s %(levelname)s: %(message)s', level=logging.INFO)
 LOGGER = logging.getLogger('TimeToEatBot')
 
@@ -39,17 +41,27 @@ def parse_time(time_str):
 
 
 def add_tracking_task(chat_id, start_time, end_time):
-    """Sends request to the server to create new tracking task."""
+    """Sends request to the server to create new tracking task.
+       Returns True in success or False in case of any error."""
 
     data_to_send = {
-        'tg_chat_id' : chat_id,
-        'camera_url' : KUKURUZA_CAM,
-        'time_range_start' : start_time.strftime("%H:%M"),
-        'time_range_finish' : end_time.strftime("%H:%M")
+        'tg_chat_id': chat_id,
+        'camera_url': KUKURUZA_CAM,
+        'time_range_start': start_time.strftime("%H:%M"),
+        'time_range_finish': end_time.strftime("%H:%M")
     }
 
-    reply = Request().post(GOEAT_SERVER + '/api/submit/', data_to_send)
-    LOGGER.info('reply from server: ' + reply)
+    try:
+        # TODO: should avoid using Telegram-specific requests, use smth other (urllib3?)
+        Request().post(GOEAT_SERVER + '/api/submit/', data_to_send)
+    except KeyError as err:
+        # now ugly hack just to make it work, see TODO upper
+        if str(err) == "'result'":
+            return True
+    except TelegramError:
+        return False
+
+    return False
 
 
 def on_start_command(update, context):
@@ -74,11 +86,15 @@ def on_start_command(update, context):
                                       welcome_text)
         return
 
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f'start time: {start_time.strftime("%H:%M")}; end '
-                                                                    f'time: {end_time.strftime("%H:%M")}')
+    is_success = add_tracking_task(update.effective_chat.id, start_time, end_time)
 
-    add_tracking_task(update.effective_chat.id, start_time, end_time)
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f'task created')
+    if is_success:
+        message = f'Успешно создано задание следить за камерой в период: ' \
+                  f'{start_time.strftime("%H:%M")} - {end_time.strftime("%H:%M")}'
+    else:
+        message = 'Ошибка сервера'
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
 
 def on_unknown_command(update, context):
