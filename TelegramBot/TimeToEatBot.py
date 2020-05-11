@@ -44,6 +44,9 @@ def parse_time(time_str):
 
 
 def on_start_command(update, context):
+    LOGGER.info('got \'/start\' command from chatId %d, username \'%s\': "%s"',
+                update.effective_chat.id, update.message.from_user.username, update.message.text)
+
     if len(context.args) != 2:
         context.bot.send_message(chat_id=update.effective_chat.id, text=HELP_TEXT)
         return
@@ -85,10 +88,14 @@ def on_start_command(update, context):
 
 
 def on_help_command(update, context):
+    LOGGER.info('got \'/help\' command from chatId %d, username \'%s\': "%s"',
+                update.effective_chat.id, update.message.from_user.username, update.message.text)
     context.bot.send_message(chat_id=update.effective_chat.id, text=HELP_TEXT)
 
 
 def on_unknown_command(update, context):
+    LOGGER.info('got unknown command from chatId %d, username \'%s\': "%s"',
+                update.effective_chat.id, update.message.from_user.username, update.message.text)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
 
 
