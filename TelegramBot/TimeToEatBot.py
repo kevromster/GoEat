@@ -24,9 +24,6 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(name)s %(levelname)s: %(message)s', level=logging.INFO)
 LOGGER = logging.getLogger('TimeToEatBot')
 
-# the token should be provided via this environment variable
-TGBOT_TOKEN = os.environ['TGBOT_TOKEN']
-
 GOEAT_SERVER = 'http://127.0.0.1:8000'
 ADD_TRACKING_TASK_ENDPOINT = GOEAT_SERVER + '/api/submit/'
 KUKURUZA_CAM = 'https://lideo.tv/hamsternsk/streams/12620'
@@ -109,7 +106,11 @@ def on_any_text_message(update, context):
 
 def run_bot():
     LOGGER.info('Starting @TimeToEatBot...')
-    updater = Updater(token=TGBOT_TOKEN, use_context=True)
+
+    # the token should be provided via the environment variable
+    token = os.environ['TGBOT_TOKEN']
+
+    updater = Updater(token=token, use_context=True)
     dispatcher = updater.dispatcher
 
     start_command_handler = CommandHandler('start', on_start_command)
