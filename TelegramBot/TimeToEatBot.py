@@ -29,6 +29,8 @@ GOEAT_SERVER = 'http://127.0.0.1:8000'
 ADD_TRACKING_TASK_ENDPOINT = GOEAT_SERVER + '/api/submit/'
 KUKURUZA_CAM = 'https://lideo.tv/hamsternsk/streams/12620'
 
+HELP_TEXT = "Введите команду /start и время, в которое вы обычно идёте обедать, например:\n/start 13:30 14:10"
+
 
 def parse_time(time_str):
     """Parses time from input string expected to be in format 'HH:MM' or 'HH-MM'.
@@ -42,10 +44,8 @@ def parse_time(time_str):
 
 
 def on_start_command(update, context):
-    welcome_text = "Введите команду /start и время, в которое вы обычно идёте обедать, например:\n  /start 13:30 14:10"
-
     if len(context.args) != 2:
-        context.bot.send_message(chat_id=update.effective_chat.id, text=welcome_text)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=HELP_TEXT)
         return
 
     try:
@@ -54,13 +54,13 @@ def on_start_command(update, context):
     except ValueError:
         context.bot.send_message(chat_id=update.effective_chat.id,
                                  text='Ошибка: не удалось определить диапазон времени: "' + ' '.join(context.args) +
-                                      '".\n' + welcome_text)
+                                      '".\n' + HELP_TEXT)
         return
 
     if end_time <= start_time:
         context.bot.send_message(chat_id=update.effective_chat.id,
                                  text="Ошибка: время окончания диапазона должно быть больше времени его начала.\n" +
-                                      welcome_text)
+                                      HELP_TEXT)
         return
 
     data_to_send = {
@@ -84,6 +84,10 @@ def on_start_command(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
 
+def on_help_command(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text=HELP_TEXT)
+
+
 def on_unknown_command(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
 
@@ -99,10 +103,12 @@ def run_bot():
     dispatcher = updater.dispatcher
 
     start_command_handler = CommandHandler('start', on_start_command)
+    help_command_handler = CommandHandler('help', on_help_command)
     unknown_command_handler = MessageHandler(Filters.command, on_unknown_command)
     any_text_message_handler = MessageHandler(Filters.text, on_any_text_message)
 
     dispatcher.add_handler(start_command_handler)
+    dispatcher.add_handler(help_command_handler)
     dispatcher.add_handler(unknown_command_handler)
     dispatcher.add_handler(any_text_message_handler)
 
