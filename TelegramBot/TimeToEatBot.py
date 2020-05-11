@@ -96,12 +96,13 @@ def on_help_command(update, context):
 def on_unknown_command(update, context):
     LOGGER.info('got unknown command from chatId %d, username \'%s\': "%s"',
                 update.effective_chat.id, update.message.from_user.username, update.message.text)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Мне неизвестна эта команда.\n" + HELP_TEXT)
 
 
 def on_any_text_message(update, context):
     LOGGER.info('got input message from chatId %d, username \'%s\': "%s"',
                 update.effective_chat.id, update.message.from_user.username, update.message.text)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=HELP_TEXT)
 
 
 def run_bot():
