@@ -14,11 +14,11 @@
 # ==============================================================================
 """@TimeToEatBot Telegram bot implementation."""
 
-from telegram import TelegramError
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from telegram.utils.request import Request
+from collections import namedtuple
 from datetime import datetime
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
+import requests
 import logging
 
 logging.basicConfig(format='[%(asctime)s] %(name)s %(levelname)s: %(message)s', level=logging.INFO)
@@ -26,6 +26,7 @@ LOGGER = logging.getLogger('TimeToEatBot')
 
 TGBOT_TOKEN = '967774018:AAEy8obt8JfEJVcHNcJhqnin9P5S3YAjkSM'
 GOEAT_SERVER = 'http://127.0.0.1:8000'
+ADD_TRACKING_TASK_ENDPOINT = GOEAT_SERVER + '/api/submit/'
 KUKURUZA_CAM = 'https://lideo.tv/hamsternsk/streams/12620'
 
 
@@ -38,30 +39,6 @@ def parse_time(time_str):
         split_symbol = '-'
 
     return datetime.strptime(time_str, f'%H{split_symbol}%M')
-
-
-def add_tracking_task(chat_id, start_time, end_time):
-    """Sends request to the server to create new tracking task.
-       Returns True in success or False in case of any error."""
-
-    data_to_send = {
-        'tg_chat_id': chat_id,
-        'camera_url': KUKURUZA_CAM,
-        'time_range_start': start_time.strftime("%H:%M"),
-        'time_range_finish': end_time.strftime("%H:%M")
-    }
-
-    try:
-        # TODO: should avoid using Telegram-specific requests, use smth other (urllib3?)
-        Request().post(GOEAT_SERVER + '/api/submit/', data_to_send)
-    except KeyError as err:
-        # now ugly hack just to make it work, see TODO upper
-        if str(err) == "'result'":
-            return True
-    except TelegramError:
-        return False
-
-    return False
 
 
 def on_start_command(update, context):
@@ -86,13 +63,23 @@ def on_start_command(update, context):
                                       welcome_text)
         return
 
-    is_success = add_tracking_task(update.effective_chat.id, start_time, end_time)
+    data_to_send = {
+        'tg_chat_id': update.effective_chat.id,
+        'camera_url': KUKURUZA_CAM,
+        'time_range_start': start_time.strftime("%H:%M"),
+        'time_range_finish': end_time.strftime("%H:%M")
+    }
+
+    response = requests.post(ADD_TRACKING_TASK_ENDPOINT, data_to_send, timeout=5)
+
+    # 200-299 range corresponds to HTTP success statuses
+    is_success = 200 <= response.status_code <= 299
 
     if is_success:
         message = f'Успешно создано задание следить за камерой в период: ' \
                   f'{start_time.strftime("%H:%M")} - {end_time.strftime("%H:%M")}'
     else:
-        message = 'Ошибка сервера'
+        message = 'Ошибка сервера: ' + response.status_code + ' ' + response.reason
 
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
