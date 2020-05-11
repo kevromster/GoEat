@@ -17,13 +17,16 @@
 from datetime import datetime
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
+import os
 import requests
 import logging
 
 logging.basicConfig(format='[%(asctime)s] %(name)s %(levelname)s: %(message)s', level=logging.INFO)
 LOGGER = logging.getLogger('TimeToEatBot')
 
-TGBOT_TOKEN = '967774018:AAEy8obt8JfEJVcHNcJhqnin9P5S3YAjkSM'
+# the token should be provided via this environment variable
+TGBOT_TOKEN = os.environ['TGBOT_TOKEN']
+
 GOEAT_SERVER = 'http://127.0.0.1:8000'
 ADD_TRACKING_TASK_ENDPOINT = GOEAT_SERVER + '/api/submit/'
 KUKURUZA_CAM = 'https://lideo.tv/hamsternsk/streams/12620'
