@@ -14,7 +14,6 @@
 # ==============================================================================
 """@TimeToEatBot Telegram bot implementation."""
 
-from collections import namedtuple
 from datetime import datetime
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
